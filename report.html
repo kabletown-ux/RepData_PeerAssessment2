@@ -61,12 +61,61 @@ img {
 
 
 
-<div id="questions" class="section level1">
-<h1>Questions</h1>
-<p>Your data analysis must address the following questions:</p>
-<p>Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?</p>
-<p>Across the United States, which types of events have the greatest economic consequences?</p>
-<p>Consider writing your report as if it were to be read by a government or municipal manager who might be responsible for preparing for severe weather events and will need to prioritize resources for different types of events. However, there is no need to make any specific recommendations in your report.</p>
+<div id="reproducible-research-project-2-noaa-storm-data-analysis" class="section level1">
+<h1>Reproducible Research Project 2: NOAA Storm Data Analysis</h1>
+<div id="r.-p.-ruiz" class="section level4">
+<h4>R. P. Ruiz</h4>
+</div>
+</div>
+<div id="synopsis" class="section level1">
+<h1>Synopsis:</h1>
+<p>In this project I will analyze NOAA storm data covering meteorological events taking place between 1950 and November 2011. Two questions I will attempt to address are: 1. Across the United States, which types of events are most harmful with respect to population health? 2. Across the United States, which types of events have the greatest economic consequences?</p>
+<p>In summary, the answer to first question is that the most harmful event is tornado with respect to fatalities (—- thousand people) and flood with respect to injuries (—- thousand people). Additionally, flood has the greatest economic consequences.</p>
+</div>
+<div id="data-processing" class="section level1">
+<h1>Data Processing</h1>
+<p>There should be a section titled Data Processing which describes (in words and code) how the data were loaded into R and processed for analysis. In particular, your analysis must start from the raw CSV file containing the data. You cannot do any preprocessing outside the document. If preprocessing is time-consuming you may consider using the cache = TRUE option for certain code chunks.</p>
+<div id="loading-libraries" class="section level2">
+<h2>Loading Libraries</h2>
+<pre class="r"><code>library( ggplot2 )</code></pre>
+</div>
+<div id="setting-environment-variables" class="section level2">
+<h2>Setting Environment Variables</h2>
+<pre class="r"><code>large &lt;- FALSE
+stormData &lt;- NULL</code></pre>
+</div>
+<div id="getting-loading-data" class="section level2">
+<h2>Getting &amp; Loading Data</h2>
+<pre class="r"><code># Conditional data loading: Pull from file...
+if ( is.null( stormData ) ) { 
+    
+    # Conditional dataset size: use full, refreshed, data sets...
+    if ( large ) {
+        
+        if ( debug ) print( &quot;Using BIG-ASSED versions of stormData...&quot; )
+        stormData &lt;&lt;- read.csv( &quot;../data/repdata-data-StormData.csv&quot; )
+        
+    } else { # ...or smaller samples
+        
+        print( &quot;Using TOY versions of stormData...&quot; )
+        stormData &lt;&lt;- read.csv( &quot;../data/stormDataSample.csv&quot; )
+    }
+    
+} else { # or use cached copy
+    
+    if ( debug ) print( &quot;Using cached versions of stormData...&quot; )
+}</code></pre>
+<pre><code>## [1] &quot;Using TOY versions of stormData...&quot;</code></pre>
+</div>
+</div>
+<div id="results" class="section level1">
+<h1>Results</h1>
+<p>The analysis document must have at least one figure containing a plot.</p>
+<p>Your analyis must have no more than three figures. Figures may have multiple plots in them (i.e. panel plots), but there cannot be more than three figures total.</p>
+</div>
+<div id="process" class="section level1">
+<h1>PROCESS</h1>
+<p>Consider writing your report as if it were to be read by a government or municipal manager who might be responsile for preparing for severe weather events and will need to prioritize resources for different types of events. However, there is no need to make any specific recommendations in your report.</p>
 </div>
 
 
