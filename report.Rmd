@@ -1,54 +1,124 @@
 #Reproducible Research Project 2: NOAA Storm Data Analysis
-####R. P. Ruiz
+####kabletown-ux
 
-#Synopsis: 
+#Synopsis 
 
 In this project I will analyze NOAA storm data covering meteorological events taking place between 1950 and November 2011. Two questions I will attempt to address are: 1. Across the United States, which types of events are most harmful with respect to population health? 2. Across the United States, which types of events have the greatest economic consequences?
 
-In summary, the answer to first question is that the most harmful event is tornado with respect to fatalities (---- thousand people) and flood with respect to injuries (---- thousand people). Additionally, flood has the greatest economic consequences.
+In summary, the answer to first question is that the most harmful event is tornado with respect to human fatalities (5,633 people across the data collection years) and injuries (91,346 people across the data collection years). Additionally, hail has the greatest negative economic impact on crops while tornados have the most significant negative economic effect on property.
 
-#Data Processing (cache = TRUE?)
-##General Strategy: Data for inititial analysis and plotting will be pulled from a 10K record sample (~6MB) of the entire dataset (~536MB).  Once basic analysis, plotting and document layout are completed, the "large" switch will be set to TRUE to enable loading of the entirety of NOAA's storm data file (~536MB).  This is a cacheing strategy borrowed from previous data analysis assignments.  This may prove to be unsuitable for knitr document creation, but, at the very least, it facilitated prototyping all code in a standard R source code module.
+#Data Processing
+###General Strategy: 
+Data for inititial analysis and plotting will be pulled from a 10K record sample (~6MB) of the entire dataset (~536MB).  Once basic analysis, plotting and document layout are completed, the "large" switch will be set to TRUE to enable loading of the entirety of NOAA's storm data file (~536MB).  This is a cacheing strategy borrowed from previous data analysis assignments.  This may prove to be unsuitable for knitr document creation, but, at the very least, it facilitated prototyping all code in a standard R source code module.
 
-##Loading Libraries
+###Load Libraries
 ```{r}
 library( ggplot2 )
+require( gridExtra )
 ```
 
-##Setting Environment Variables
+###Set Environment Variables
 ```{r}
-large <- FALSE
-stormData <- NULL
+large <- TRUE
+download <- FALSE
 ```
-##Getting & Loading Data
+###Get Data
 ```{r}
-# Conditional data loading: Pull from file...
-if ( is.null( stormData ) ) { 
-    
-    # Conditional dataset size: use full, refreshed, data sets...
-    if ( large ) {
-        
-        print( "Using FULL version of stormData..." )
-        stormData <<- read.csv( "../data/repdata-data-StormData.csv" )
-        
-    } else { # ...or smaller samples
-        
-        print( "Using TOY version of stormData..." )
-        stormData <<- read.csv( "../data/stormDataSample.csv" )
-    }
-    
-} else { # or use cached copy
-    
-    print( "Using cached versions of stormData..." )
+## Condidtional download of the data
+if ( download ) {
+    url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+    download.file( url, "../data/StormDF.csv.bz2" )
 }
 ```
+###Load Data
+```{r, cache=TRUE}
+# Conditional dataset size: use full, refreshed, data sets...
+if ( large ) {
+    
+    print( "Using FULL version of stormData..." )
+    if ( download ) {
+        stormData <- read.csv( bzfile( "../data/StormDF.csv.bz2" ) )
+    } else {
+        stormData <- read.csv( "../data/repdata-data-StormData.csv" )
+    }
+    
+} else { # ...or smaller samples
+    
+    print( "Using SAMPLED version of stormData..." )
+    stormData <- read.csv( "../data/stormDataSample.csv" )
+}
+```
+###Clean Data 
+```{r}
+## remove superfluous columns (this matters w/ large datasets!)
+## deal w/ borked strings
+## impute missing values, if necessary
+```
+###Analyze Data: Human Fatalities & Injuries
+```{r}
+fatalities <- aggregate( stormData[ "FATALITIES" ], by = stormData[ c( "EVTYPE" ) ], FUN = sum, na.rm = TRUE )
+orderedFatalities <- fatalities[ order( -fatalities$FATALITIES ), ]
+#substitute "top 10"
+orderedFatalities <- head( orderedFatalities, 10 )
+#orderedFatalities <- orderedFatalities[ which( orderedFatalities$FATALITIES > 0 ), ]
+print( orderedFatalities )
+
+injuries <- aggregate( stormData[ "INJURIES" ], by = stormData[ c( "EVTYPE" ) ], FUN = sum, na.rm = TRUE )
+orderedInjuries <- injuries[ order( -injuries$INJURIES ), ]
+#substitute "top 10"
+orderedInjuries <- head( orderedInjuries, 10 )
+#orderedInjuries <- orderedInjuries[ which( orderedInjuries$INJURIES > 0 ), ]
+print( orderedInjuries ) 
+
+```
+###Analyze Data: Property & Crop Damages
+```{r}
+cropDamages <- aggregate( stormData[ "CROPDMG" ], by = stormData[ c( "EVTYPE" ) ], FUN = sum, na.rm = TRUE )
+orderedCropDamages <- cropDamages[ order( -cropDamages$CROPDMG ), ]
+orderedCropDamages <- head( orderedCropDamages, 10 )
+print( orderedCropDamages ) 
+
+propertyDamages <- aggregate( stormData[ "PROPDMG" ], by = stormData[ c( "EVTYPE" ) ], FUN = sum, na.rm = TRUE )
+orderedPropertyDamages <- propertyDamages[ order( -propertyDamages$PROPDMG ), ]
+orderedPropertyDamages <- head( orderedPropertyDamages, 10 )
+print( orderedPropertyDamages ) 
+```
+
 #Results
+###Results: Human Fatalities & Injuries
+```{r}
+ggplot( data = orderedFatalities, aes( x = orderedFatalities$EVTYPE, y = orderedFatalities$FATALITIES, fill = EVTYPE ) ) + 
+    geom_bar( stat = "identity" ) +
+    theme( axis.text.x = element_text( angle = 45, hjust = 1 ) ) +
+    xlab( "Meteorological Event" ) +
+    ylab( "Fatality Count" ) + 
+    ggtitle( "Fatality Count, 1950-2011" )
 
-The analysis document must have at least one figure containing a plot.
+ggplot( orderedInjuries, aes( x = EVTYPE, y = INJURIES, fill = EVTYPE ) ) + 
+    geom_bar( stat="identity", position = "dodge" ) + 
+    labs( x = "Meteorological Event", y = "Injury Count" ) + 
+    labs( title = "Injury Count, 1950-2011" ) +
+    theme( axis.text.x = element_text( angle = 45, vjust = 1, hjust=1 ) )
+```
 
-Your analyis must have no more than three figures. Figures may have multiple plots in them (i.e. panel plots), but there cannot be more than three figures total.
 
+###Results: Property & Crop Damages
+```{r}
 
+cropsPlot <- ggplot( orderedCropDamages, aes( x = EVTYPE, y = CROPDMG, fill = EVTYPE ) ) + 
+    geom_bar( stat="identity", position = "dodge" ) + 
+    labs( x = "Type of Event", y = "Crop Damage (Thousands of Dollars?)" ) + 
+    labs( title = "Crop Damage, 1950-2011" ) +
+    theme( axis.text.x = element_text( angle = 45, vjust = 1, hjust=1 ) )
+print( cropsPlot )
 
-#PROCESS
-Consider writing your report as if it were to be read by a government or municipal manager who might be responsile for preparing for severe weather events and will need to prioritize resources for different types of events. However, there is no need to make any specific recommendations in your report.
+propertyPlot <- ggplot( orderedPropertyDamages, aes( x = EVTYPE, y = PROPDMG, fill = EVTYPE ) ) + 
+    geom_bar( stat="identity", position = "dodge" ) + 
+    labs( x = "Type of Event", y = "Property Damage (Thousands of Dollars?)" ) + 
+    labs( title = "Property Damage, 1950-2011" ) +
+    theme( axis.text.x = element_text( angle = 45, vjust = 1, hjust=1 ) )
+print( propertyPlot )
+#can't get good leayout w/o cxrushing...
+#grid.arrange( propertyPlot, cropsPlot, heights=3:3, widths=3:3 )
+
+```

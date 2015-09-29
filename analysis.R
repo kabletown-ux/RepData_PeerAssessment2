@@ -106,7 +106,7 @@ doPropertyDamages <- function() {
     
     ggplot( orderedPropertyDamages, aes( x = EVTYPE, y = PROPDMG, fill = EVTYPE ) ) + 
         geom_bar( stat="identity", position = "dodge" ) + 
-        labs( x = "Type of Event", y = "Crop Damage (Thousands of Dollars?)" ) + 
+        labs( x = "Type of Event", y = "Property Damage (Thousands of Dollars?)" ) + 
         labs( title = "NOAA's Largest Crop Damage" ) +
         theme( axis.text.x = element_text( angle = 45, vjust = 1, hjust=1 ) )
 }
